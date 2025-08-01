@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Судебный Контроль</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* General Body and Layout Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333; /* Dark gray text */
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        /* Main Content Area */
+        .app-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Enable scrolling for content */
+            padding-bottom: 70px; /* Space for bottom navigation */
+        }
+
+        /* Page Styling */
+        .page {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            padding: 20px;
+            flex-grow: 1;
+            box-sizing: border-box;
+        }
+
+        .page.active {
+            display: flex; /* Show active page */
+        }
+
+        /* Navigation Bar Styling */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #ffffff; /* White background for nav bar */
+            border-top: 1px solid #e0e0e0; /* Light border top */
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            border-radius: 10px 10px 0 0; /* Rounded top corners */
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            color: #888; /* Default icon color */
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: color 0.3s ease, transform 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .nav-button.active {
+            color: #007bff; /* Blue for active icon */
+        }
+
+        .nav-button:hover {
+            color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-2px);
+        }
+
+        .nav-button i {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        /* Plus Button Specific Styling */
+        .nav-button.plus-button {
+            background-color: #007bff; /* Blue background */
+            color: #fff; /* White icon */
+            border-radius: 50%; /* Circular shape */
+            width: 56px;
+            height: 56px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+            transform: translateY(-15px); /* Lifted up */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+        }
+
+        .nav-button.plus-button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+            transform: translateY(-18px) scale(1.05);
+        }
+
+        .nav-button.plus-button i {
+            margin-bottom: 0;
+        }
+
+        /* Header Styling */
+        .page-header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-content {
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* Home Page Specifics */
+        #home-page .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        #home-page .summary-item:last-child {
+            border-bottom: none;
+        }
+        #home-page .summary-label {
+            font-weight: bold;
+            color: #555;
+        }
+        #home-page .summary-value {
+            color: #007bff;
+            font-weight: bold;
+        }
+        #home-page .court-breakdown {
+            margin-top: 10px;
+            padding-left: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Calendar Page Specifics */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .calendar-nav button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #007bff;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        .calendar-nav button:hover {
+            background-color: #e9ecef;
+        }
+
+        .calendar-nav span {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .calendar-day-name {
+            font-weight: bold;
+            color: #666;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .calendar-date {
+            padding: 10px 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .calendar-date:hover:not(.empty-day):not(.today) {
+            background-color: #e9ecef;
+        }
+
+        .calendar-date.empty-day {
+            visibility: hidden;
+        }
+
+        .calendar-date.weekend {
+            color: #dc3545; /* Red for weekends */
+            font-weight: bold;
+        }
+
+        .calendar-date.today {
+            font-weight: bold;
+            background-color: #e0f2f7; /* Light blue background for today */
+            color: #007bff; /* Blue text for today */
+            border: 2px solid #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .calendar-date .event-icon {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 12px;
+            color: #28a745; /* Green for event icon */
+        }
+
+        .case-details-section {
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            min-height: 100px; /* Ensure visibility even when empty */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #666;
+        }
+        .case-details-section p {
+            margin: 5px 0;
+        }
+        .case-details-section a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .case-details-section a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .modal-close-button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #888;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            color: #555;
+        }
+
+        .modal-body .toggle-container {
+            display: flex;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .modal-body .toggle-button {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            color: #555;
+            border-radius: 10px;
+        }
+
+        .modal-body .toggle-button.active {
+            background-color: #007bff;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .modal-body input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .modal-body button.submit-button {
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745; /* Green submit button */
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        }
+
+        .modal-body button.submit-button:hover {
+            background-color: #218838;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Management Page Specifics */
+        #management-page .toggle-container {
+            display: flex;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        #management-page .toggle-button {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            background-color: transparent;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            color: #555;
+            border-radius: 10px;
+        }
+
+        #management-page .toggle-button.active {
+            background-color: #007bff;
+            color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+
+        .tracked-list .list-item {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .tracked-list .list-item:hover {
+            transform: translateY(-2px);
+            background-color: #f8f9fa;
+        }
+
+        .tracked-list .item-info {
+            flex-grow: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .tracked-list .delete-button {
+            background: none;
+            border: none;
+            color: #dc3545; /* Red delete icon */
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .tracked-list .delete-button:hover {
+            color: #c82333;
+            background-color: #f8d7da;
+        }
+
+        /* Profile Page Specifics */
+        #profile-page .profile-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #profile-page .user-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        #profile-page .subscription-details p {
+            margin: 5px 0;
+            color: #555;
+            font-size: 15px;
+        }
+
+        #profile-page .subscription-details strong {
+            color: #007bff;
+        }
+
+        #profile-page .choose-tariff-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        #profile-page .choose-tariff-button:hover {
+            background-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        #profile-page .email-notifications {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        #profile-page .email-notifications h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Toggle Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            margin-left: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #28a745; /* Green for ON state */
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #28a745;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        #profile-page .email-input-container {
+            margin-top: 15px;
+            display: none; /* Hidden by default */
+        }
+
+        #profile-page .email-input-container.visible {
+            display: block;
+        }
+
+        /* Message Box Styling (for alerts/confirmations) */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .message-box-content h3 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .message-box-content p {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        .message-box-content button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .message-box-content .message-ok-button {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .message-box-content .message-ok-button:hover {
+            background-color: #0056b3;
+        }
+
+        .message-box-content .message-cancel-button {
+            background-color: #e0e0e0;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .message-box-content .message-cancel-button:hover {
+            background-color: #ccc;
+        }
+
+        /* Loading Indicator */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 4000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Home Page -->
+        <div id="home-page" class="page active">
+            <h1 class="page-header">Главная</h1>
+            <div class="card">
+                <div class="card-title">Обзор</div>
+                <div class="card-content">
+                    <div class="summary-item">
+                        <span class="summary-label">Ближайшее заседание:</span>
+                        <span class="summary-value" id="nearest-hearing-date">Загрузка...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Отслеживаемых дел:</span>
+                        <span class="summary-value" id="total-cases">Загрузка...</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Отслеживаемых компаний:</span>
+                        <span class="summary-value" id="total-companies">Загрузка...</span>
+                    </div>
+                    <div class="court-breakdown" id="court-breakdown">
+                        <!-- Court breakdown will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Page -->
+        <div id="calendar-page" class="page">
+            <h1 class="page-header">Календарь заседаний</h1>
+            <div class="calendar-nav">
+                <button id="prev-month"><i class="fas fa-chevron-left"></i></button>
+                <span id="current-month-year"></span>
+                <button id="next-month"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                <div class="calendar-day-name">Пн</div>
+                <div class="calendar-day-name">Вт</div>
+                <div class="calendar-day-name">Ср</div>
+                <div class="calendar-day-name">Чт</div>
+                <div class="calendar-day-name">Пт</div>
+                <div class="calendar-day-name">Сб</div>
+                <div class="calendar-day-name">Вс</div>
+                <!-- Calendar dates will be inserted here by JS -->
+            </div>
+            <div class="case-details-section card" id="calendar-case-details">
+                <p>Нажмите на дату с иконкой ⚔️, чтобы увидеть детали дела.</p>
+            </div>
+        </div>
+
+        <!-- Management Page -->
+        <div id="management-page" class="page">
+            <h1 class="page-header">Управление</h1>
+            <div class="toggle-container">
+                <button class="toggle-button active" id="toggle-cases">Судебные дела</button>
+                <button class="toggle-button" id="toggle-companies">Компании</button>
+            </div>
+            <div class="tracked-list" id="tracked-cases-list">
+                <!-- Tracked cases will be inserted here -->
+                <p class="empty-list-message">Нет отслеживаемых дел.</p>
+            </div>
+            <div class="tracked-list" id="tracked-companies-list" style="display: none;">
+                <!-- Tracked companies will be inserted here -->
+                <p class="empty-list-message">Нет отслеживаемых компаний.</p>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profile-page" class="page">
+            <h1 class="page-header">Личный кабинет</h1>
+            <div class="card profile-info">
+                <p class="user-name" id="user-name">Загрузка имени...</p>
+                <div class="subscription-details">
+                    <p>Срок окончания подписки: <strong id="subscription-end-date">Загрузка...</strong></p>
+                    <p>Тариф: <strong id="tariff-plan">Загрузка...</strong></p>
+                </div>
+                <button class="choose-tariff-button" id="choose-tariff-button">Выбрать тариф</button>
+            </div>
+
+            <div class="card email-notifications">
+                <h3>Уведомления по Email</h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <span>Включить уведомления:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="email-notifications-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="email-input-container" id="email-input-container">
+                    <input type="text" id="email-input" placeholder="Введите ваш Email">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <button class="nav-button active" data-page="home-page">
+            <i class="fas fa-home"></i>
+            <span>Главная</span>
+        </button>
+        <button class="nav-button" data-page="calendar-page">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Календарь</span>
+        </button>
+        <button class="nav-button plus-button" data-page="add-item-modal">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="nav-button" data-page="management-page">
+            <i class="fas fa-bell"></i>
+            <span>Управление</span>
+        </button>
+        <button class="nav-button" data-page="profile-page">
+            <i class="fas fa-user"></i>
+            <span>Профиль</span>
+        </button>
+    </nav>
+
+    <!-- Add Item Modal -->
+    <div class="modal-overlay" id="add-item-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить</h2>
+                <button class="modal-close-button" id="close-add-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="toggle-container">
+                    <button class="toggle-button active" id="add-case-toggle">Судебное дело</button>
+                    <button class="toggle-button" id="add-company-toggle">Компания</button>
+                </div>
+                <input type="text" id="add-input" placeholder="Введите номер дела">
+                <button class="submit-button" id="add-submit-button">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box (for custom alerts/confirmations) -->
+    <div class="message-box-overlay" id="message-box">
+        <div class="message-box-content">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-text"></p>
+            <button class="message-ok-button" id="message-box-ok">ОК</button>
+            <button class="message-cancel-button" id="message-box-cancel" style="display: none;">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // Инициализация Telegram Mini App SDK
+        // В реальном Telegram Mini App вам нужно будет включить скрипт SDK:
+        // <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        // И затем инициализировать его так:
+        // const Telegram = window.Telegram.WebApp;
+        // Telegram.ready();
+        // Telegram.expand();
+
+        // Для демонстрационных целей без реального SDK используется заглушка:
+        const Telegram = {
+            WebApp: {
+                initDataUnsafe: {
+                    user: {
+                        first_name: "Тестовый",
+                        last_name: "Пользователь",
+                        id: "123456789"
+                    }
+                },
+                close: () => { console.log("Telegram Mini App: Приложение закрыто."); /* Симуляция закрытия */ },
+                sendData: (data) => { console.log("Telegram Mini App: Отправка данных боту:", data); /* Симуляция отправки данных */ },
+                ready: () => { console.log("Telegram Mini App: Приложение готово."); },
+                expand: () => { console.log("Telegram Mini App: Приложение развернуто."); }
+            }
+        };
+
+        // Вспомогательная функция для отображения пользовательского окна сообщений (вместо alert/confirm)
+        function showMessageBox(title, message, type = 'alert', onOk = null, onCancel = null) {
+            console.log(`MessageBox: ${title} - ${message} (Type: ${type})`);
+            const msgBox = document.getElementById('message-box');
+            document.getElementById('message-box-title').innerText = title;
+            document.getElementById('message-box-text').innerText = message;
+            const okButton = document.getElementById('message-box-ok');
+            const cancelButton = document.getElementById('message-box-cancel');
+
+            okButton.onclick = () => {
+                msgBox.classList.remove('visible');
+                if (onOk) onOk();
+            };
+
+            if (type === 'confirm') {
+                cancelButton.style.display = 'inline-block';
+                cancelButton.onclick = () => {
+                    msgBox.classList.remove('visible');
+                    if (onCancel) onCancel();
+                };
+            } else {
+                cancelButton.style.display = 'none';
+            }
+
+            msgBox.classList.add('visible');
+        }
+
+        // Вспомогательная функция для отображения/скрытия индикатора загрузки
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('visible');
+            console.log("Loading: Показан");
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('visible');
+            console.log("Loading: Скрыт");
+        }
+
+        // --- Симуляция вебхуков ---
+        // В реальном приложении это будут фактические вызовы fetch к вашему бэкенду.
+        // Для этой демонстрации они возвращают фиктивные данные после задержки.
+        const MOCK_BACKEND_URL = 'https://your-backend-webhook-url.com/api/'; // Замените на ваш фактический URL бэкенда
+
+        async function sendWebhook(endpoint, data) {
+            console.log(`Webhook: Отправка запроса к ${endpoint} с данными:`, data);
+            showLoading();
+            try {
+                // Имитация задержки сети
+                await new Promise(resolve => setTimeout(Math.random() * 500 + 300, resolve));
+
+                // В реальном сценарии вы бы использовали fetch:
+                /*
+                const response = await fetch(`${MOCK_BACKEND_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // 'Authorization': `Bearer ${Telegram.WebApp.initData}` // Пример для аутентификации
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+                }
+                const result = await response.json();
+                console.log(`Webhook: Успешный ответ от ${endpoint}:`, result);
+                return result;
+                */
+
+                // Фиктивные ответы для демонстрационных целей
+                if (endpoint === 'check_subscription') {
+                    // Для отладки всегда симулируем активную подписку.
+                    // В реальном приложении это должно быть: const hasSubscription = Math.random() > 0.1;
+                    const hasSubscription = true; // Всегда true для отладки
+                    return { hasSubscription: hasSubscription, endDate: "2025-12-31", tariff: "Премиум" };
+                } else if (endpoint === 'get_home_data') {
+                    return {
+                        nearestHearing: "15.08.2025",
+                        totalCases: 125,
+                        courtBreakdown: {
+                            "АС г. Москвы": 50,
+                            "АС Московской области": 30,
+                            "АС Санкт-Петербурга": 20,
+                            "Другие": 25
+                        },
+                        totalCompanies: 87
+                    };
+                } else if (endpoint === 'get_calendar_events') {
+                    // Фиктивные данные для событий календаря
+                    const events = {};
+                    const today = new Date();
+                    const currentMonth = today.getMonth();
+                    const currentYear = today.getFullYear();
+
+                    // Добавляем несколько событий на текущий месяц
+                    events[`${currentYear}-${currentMonth + 1}-10`] = [{ title: "Дело 123456", link: "https://example.com/case/123456" }];
+                    events[`${currentYear}-${currentMonth + 1}-16`] = [{ title: "Дело 789012", link: "https://example.com/case/789012" }];
+                    events[`${currentYear}-${currentMonth + 1}-22`] = [{ title: "Дело 345678", link: "https://example.com/case/345678" }];
+
+                    // Добавляем несколько событий на следующий месяц
+                    const nextMonth = (currentMonth + 1) % 12;
+                    const nextMonthYear = nextMonth === 0 ? currentYear + 1 : currentYear;
+                    events[`${nextMonthYear}-${nextMonth + 1}-05`] = [{ title: "Дело 987654", link: "https://example.com/case/987654" }];
+                    events[`${nextMonthYear}-${nextMonth + 1}-18`] = [{ title: "Дело 112233", link: "https://example.com/case/112233" }];
+
+                    return events;
+                } else if (endpoint === 'get_tracked_items') {
+                    return {
+                        cases: [
+                            { id: 'case1', number: 'А40-12345/2023', link: 'https://kad.arbitr.ru/Card/case1' },
+                            { id: 'case2', number: 'А50-98765/2024', link: 'https://kad.arbitr.ru/Card/case2' },
+                            { id: 'case3', number: 'А10-54321/2023', link: 'https://kad.arbitr.ru/Card/case3' }
+                        ],
+                        companies: [
+                            { id: 'comp1', inn: '7701000001', ogrn: '1027700000001', name: 'ООО "Рога и Копыта"', link: 'https://checko.ru/company/7701000001' },
+                            { id: 'comp2', inn: '5001000002', ogrn: '1035000000002', name: 'АО "СтройВектор"', link: 'https://checko.ru/company/5001000002' }
+                        ]
+                    };
+                } else if (endpoint === 'add_item') {
+                    return { success: true, message: 'Элемент успешно добавлен!' };
+                } else if (endpoint === 'delete_item') {
+                    return { success: true, message: 'Элемент успешно удален!' };
+                } else if (endpoint === 'update_profile') {
+                    return { success: true, message: 'Профиль успешно обновлен!' };
+                } else if (endpoint === 'initiate_tariff_selection') {
+                    return { success: true, message: 'Выбор тарифа инициирован в боте.' };
+                } else if (endpoint === 'initiate_subscription_renewal') {
+                     return { success: true, message: 'Процесс продления подписки инициирован в боте.' };
+                }
+                else {
+                    console.warn(`Webhook: Неизвестная конечная точка: ${endpoint}`);
+                    return { success: false, message: 'Неизвестная конечная точка вебхука.' };
+                }
+            } catch (error) {
+                console.error(`Webhook: Ошибка при вызове ${endpoint}:`, error);
+                showMessageBox('Ошибка', `Не удалось получить данные: ${error.message}`);
+                return { success: false, message: error.message };
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // --- Состояние приложения и навигация ---
+        let currentPage = 'home-page';
+        const pages = document.querySelectorAll('.page');
+        const navButtons = document.querySelectorAll('.nav-button');
+
+        function showPage(pageId) {
+            console.log(`Navigation: Переключение на страницу: ${pageId}`);
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+
+            navButtons.forEach(button => {
+                if (button.dataset.page === pageId) {
+                    button.classList.add('active');
+                } else if (button.dataset.page !== 'add-item-modal') { // Не деактивировать кнопку "плюс"
+                    button.classList.remove('active');
+                }
+            });
+            currentPage = pageId;
+            // Повторная отрисовка данных для страницы, если необходимо (например, календарь или управление)
+            if (pageId === 'calendar-page') {
+                fetchCalendarEvents(currentDate.getFullYear(), currentDate.getMonth() + 1); // Загружаем события для текущего месяца
+            } else if (pageId === 'management-page') {
+                fetchTrackedItems();
+            } else if (pageId === 'home-page') {
+                fetchHomeData();
+            } else if (pageId === 'profile-page') {
+                fetchProfileData();
+            }
+        }
+
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const pageId = button.dataset.page;
+                if (pageId === 'add-item-modal') {
+                    showAddItemModal();
+                } else {
+                    showPage(pageId);
+                }
+            });
+        });
+
+        // --- Проверка подписки при открытии приложения ---
+        async function checkSubscription() {
+            console.log("Subscription: Проверка статуса подписки...");
+            showLoading();
+            const result = await sendWebhook('check_subscription', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+            if (result && result.hasSubscription) {
+                console.log("Subscription: У пользователя активная подписка.");
+                // Устанавливаем детали подписки на странице профиля
+                document.getElementById('subscription-end-date').innerText = result.endDate || 'Неизвестно';
+                document.getElementById('tariff-plan').innerText = result.tariff || 'Неизвестно';
+                hideLoading();
+                // Инициализируем другие данные после успешной проверки подписки
+                fetchHomeData();
+                fetchCalendarEvents(currentDate.getFullYear(), currentDate.getMonth() + 1); // Загружаем события для текущего месяца
+                fetchTrackedItems();
+                fetchProfileData(); // Убеждаемся, что данные профиля загружены
+            } else {
+                console.warn("Subscription: Подписка отсутствует или истекла. Закрытие приложения.");
+                showMessageBox(
+                    'Подписка',
+                    'Ваша подписка истекла или отсутствует. Пожалуйста, продлите подписку в боте.',
+                    'alert',
+                    () => {
+                        Telegram.WebApp.close();
+                        sendWebhook('initiate_subscription_renewal', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+                    }
+                );
+            }
+        }
+
+        // --- Функции домашней страницы ---
+        async function fetchHomeData() {
+            console.log("Home Page: Загрузка данных главной страницы...");
+            const data = await sendWebhook('get_home_data', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+            if (data) {
+                document.getElementById('nearest-hearing-date').innerText = data.nearestHearing || 'Нет данных';
+                document.getElementById('total-cases').innerText = data.totalCases !== undefined ? data.totalCases : 'Нет данных';
+                document.getElementById('total-companies').innerText = data.totalCompanies !== undefined ? data.totalCompanies : 'Нет данных';
+
+                const courtBreakdownDiv = document.getElementById('court-breakdown');
+                courtBreakdownDiv.innerHTML = '<strong>По судам:</strong><br>';
+                if (data.courtBreakdown && Object.keys(data.courtBreakdown).length > 0) {
+                    for (const court in data.courtBreakdown) {
+                        courtBreakdownDiv.innerHTML += `<span>${court}: ${data.courtBreakdown[court]}</span><br>`;
+                    }
+                } else {
+                    courtBreakdownDiv.innerHTML += '<span>Нет данных по судам.</span>';
+                }
+                console.log("Home Page: Данные загружены:", data);
+            }
+        }
+
+        // --- Функции страницы календаря ---
+        let currentDate = new Date(); // Хранит текущий отображаемый месяц/год
+        let calendarEvents = {}; // Хранит события, полученные от вебхука
+
+        async function fetchCalendarEvents(year, month) {
+            console.log(`Calendar: Загрузка событий для ${month}/${year}...`);
+            const events = await sendWebhook('get_calendar_events', { userId: Telegram.WebApp.initDataUnsafe.user.id, year, month });
+            if (events) {
+                calendarEvents = events; // Сохраняем полученные события
+                renderCalendar(currentDate); // Повторно отрисовываем календарь с новыми событиями
+                console.log("Calendar: События загружены:", events);
+            }
+        }
+
+        function renderCalendar(date) {
+            console.log("Calendar: Отрисовка календаря для", date);
+            const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+            const year = date.getFullYear();
+            const month = date.getMonth(); // 0-indexed
+
+            document.getElementById('current-month-year').innerText = `${monthNames[month]} ${year}`;
+
+            const calendarGrid = document.getElementById('calendar-grid');
+            // Удаляем все предыдущие даты, кроме названий дней недели
+            Array.from(calendarGrid.children).forEach(child => {
+                if (!child.classList.contains('calendar-day-name')) {
+                    child.remove();
+                }
+            });
+
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 для воскресенья, 1 для понедельника
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const todayYear = today.getFullYear();
+            const todayMonth = today.getMonth();
+            const todayDate = today.getDate();
+
+            // Корректируем firstDayOfMonth, чтобы 0 был для понедельника, 6 для воскресенья
+            const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+            // Добавляем пустые дни в начало месяца
+            for (let i = 0; i < startDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('calendar-date', 'empty-day');
+                calendarGrid.appendChild(emptyDiv);
+            }
+
+            // Добавляем дни месяца
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('calendar-date');
+                dayDiv.innerText = i;
+
+                const currentDayOfWeek = new Date(year, month, i).getDay();
+                if (currentDayOfWeek === 0 || currentDayOfWeek === 6) { // 0 = воскресенье, 6 = суббота
+                    dayDiv.classList.add('weekend');
+                }
+
+                if (i === todayDate && month === todayMonth && year === todayYear) {
+                    dayDiv.classList.add('today');
+                }
+
+                // Проверяем наличие событий на эту дату
+                const dateKey = `${year}-${month + 1}-${i}`; // Формат: YYYY-M-D
+                if (calendarEvents[dateKey] && calendarEvents[dateKey].length > 0) {
+                    const eventIcon = document.createElement('i');
+                    eventIcon.classList.add('fas', 'fa-swords', 'event-icon'); // Иконка скрещенных мечей
+                    dayDiv.appendChild(eventIcon);
+                    dayDiv.dataset.events = JSON.stringify(calendarEvents[dateKey]); // Сохраняем данные события
+                    dayDiv.addEventListener('click', () => displayCaseDetails(calendarEvents[dateKey]));
+                }
+
+                calendarGrid.appendChild(dayDiv);
+            }
+
+            // Очищаем детали дела при повторной отрисовке календаря
+            document.getElementById('calendar-case-details').innerHTML = '<p>Нажмите на дату с иконкой ⚔️, чтобы увидеть детали дела.</p>';
+        }
+
+        function displayCaseDetails(events) {
+            console.log("Calendar: Отображение деталей дела для событий:", events);
+            const detailsSection = document.getElementById('calendar-case-details');
+            detailsSection.innerHTML = '';
+            if (events && events.length > 0) {
+                events.forEach(event => {
+                    const eventP = document.createElement('p');
+                    eventP.innerHTML = `<strong>${event.title}</strong>`;
+                    if (event.link) {
+                        const linkA = document.createElement('a');
+                        linkA.href = event.link;
+                        linkA.target = '_blank'; // Открыть в новой вкладке
+                        linkA.innerText = ' (Подробнее)';
+                        eventP.appendChild(linkA);
+                    }
+                    detailsSection.appendChild(eventP);
+                });
+            } else {
+                detailsSection.innerHTML = '<p>На эту дату нет запланированных заседаний.</p>';
+            }
+        }
+
+        document.getElementById('prev-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            fetchCalendarEvents(currentDate.getFullYear(), currentDate.getMonth() + 1);
+        });
+
+        document.getElementById('next-month').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            fetchCalendarEvents(currentDate.getFullYear(), currentDate.getMonth() + 1);
+        });
+
+        // --- Функции модального окна добавления элемента ---
+        const addItemModal = document.getElementById('add-item-modal');
+        const closeAddModalButton = document.getElementById('close-add-modal');
+        const addCaseToggle = document.getElementById('add-case-toggle');
+        const addCompanyToggle = document.getElementById('add-company-toggle');
+        const addInput = document.getElementById('add-input');
+        const addSubmitButton = document.getElementById('add-submit-button');
+
+        let currentAddItemType = 'case'; // 'case' или 'company'
+
+        function showAddItemModal() {
+            console.log("Add Item Modal: Открытие модального окна.");
+            addItemModal.classList.add('visible');
+            // Сброс в состояние по умолчанию
+            addCaseToggle.classList.add('active');
+            addCompanyToggle.classList.remove('active');
+            addInput.placeholder = 'Введите номер дела';
+            addInput.value = '';
+            currentAddItemType = 'case';
+        }
+
+        closeAddModalButton.addEventListener('click', () => {
+            console.log("Add Item Modal: Закрытие модального окна.");
+            addItemModal.classList.remove('visible');
+        });
+
+        addCaseToggle.addEventListener('click', () => {
+            console.log("Add Item Modal: Переключение на 'Судебное дело'.");
+            addCaseToggle.classList.add('active');
+            addCompanyToggle.classList.remove('active');
+            addInput.placeholder = 'Введите номер дела';
+            addInput.value = '';
+            currentAddItemType = 'case';
+        });
+
+        addCompanyToggle.addEventListener('click', () => {
+            console.log("Add Item Modal: Переключение на 'Компания'.");
+            addCompanyToggle.classList.remove('active');
+            addCompanyToggle.classList.add('active');
+            addInput.placeholder = 'Введите ИНН или ОГРН компании';
+            addInput.value = '';
+            currentAddItemType = 'company';
+        });
+
+        addSubmitButton.addEventListener('click', async () => {
+            const value = addInput.value.trim();
+            if (!value) {
+                showMessageBox('Ошибка', 'Пожалуйста, введите данные для отслеживания.');
+                return;
+            }
+
+            const payload = {
+                userId: Telegram.WebApp.initDataUnsafe.user.id,
+                type: currentAddItemType,
+                value: value
+            };
+
+            console.log("Add Item Modal: Отправка данных для добавления элемента:", payload);
+            const result = await sendWebhook('add_item', payload);
+            if (result && result.success) {
+                showMessageBox('Успех', result.message, 'alert', () => {
+                    addItemModal.classList.remove('visible');
+                    fetchTrackedItems(); // Обновляем список управления
+                    fetchHomeData(); // Обновляем данные на главной странице
+                });
+            } else {
+                showMessageBox('Ошибка', result.message || 'Не удалось добавить элемент.');
+            }
+        });
+
+        // --- Функции страницы управления ---
+        const managementCaseToggle = document.getElementById('toggle-cases');
+        const managementCompanyToggle = document.getElementById('toggle-companies');
+        const trackedCasesList = document.getElementById('tracked-cases-list');
+        const trackedCompaniesList = document.getElementById('tracked-companies-list');
+
+        let currentManagementView = 'cases'; // 'cases' или 'companies'
+
+        managementCaseToggle.addEventListener('click', () => {
+            console.log("Management Page: Переключение на 'Судебные дела'.");
+            managementCaseToggle.classList.add('active');
+            managementCompanyToggle.classList.remove('active');
+            trackedCasesList.style.display = 'block';
+            trackedCompaniesList.style.display = 'none';
+            currentManagementView = 'cases';
+        });
+
+        managementCompanyToggle.addEventListener('click', () => {
+            console.log("Management Page: Переключение на 'Компании'.");
+            managementCompanyToggle.classList.add('active');
+            managementCaseToggle.classList.remove('active');
+            trackedCasesList.style.display = 'none';
+            trackedCompaniesList.style.display = 'block';
+            currentManagementView = 'companies';
+        });
+
+        async function fetchTrackedItems() {
+            console.log("Management Page: Загрузка отслеживаемых элементов...");
+            const data = await sendWebhook('get_tracked_items', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+            if (data) {
+                renderTrackedList(data.cases, trackedCasesList, 'case');
+                renderTrackedList(data.companies, trackedCompaniesList, 'company');
+                console.log("Management Page: Отслеживаемые элементы загружены:", data);
+            }
+        }
+
+        function renderTrackedList(items, container, type) {
+            container.innerHTML = ''; // Очищаем существующие элементы
+
+            if (items.length === 0) {
+                const message = document.createElement('p');
+                message.classList.add('empty-list-message');
+                message.innerText = type === 'case' ? 'Нет отслеживаемых дел.' : 'Нет отслеживаемых компаний.';
+                container.appendChild(message);
+                return;
+            }
+
+            items.forEach(item => {
+                const listItem = document.createElement('div');
+                listItem.classList.add('list-item');
+                listItem.dataset.id = item.id;
+                listItem.dataset.type = type;
+
+                const itemInfo = document.createElement('span');
+                itemInfo.classList.add('item-info');
+                if (type === 'case') {
+                    itemInfo.innerText = item.number;
+                } else {
+                    itemInfo.innerText = `${item.name || 'Название неизвестно'} (ИНН: ${item.inn || 'N/A'})`;
+                }
+                listItem.appendChild(itemInfo);
+
+                // Делаем элемент кликабельным для открытия URL
+                if (item.link) {
+                    listItem.addEventListener('click', (event) => {
+                        // Предотвращаем открытие ссылки, если была нажата кнопка удаления
+                        if (!event.target.closest('.delete-button')) {
+                            console.log(`Management Page: Открытие ссылки: ${item.link}`);
+                            window.open(item.link, '_blank');
+                        }
+                    });
+                }
+
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                deleteButton.title = 'Удалить';
+                deleteButton.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Предотвращаем срабатывание события клика по listItem
+                    showMessageBox(
+                        'Подтверждение удаления',
+                        `Вы уверены, что хотите удалить ${type === 'case' ? 'это дело' : 'эту компанию'}?`,
+                        'confirm',
+                        () => deleteTrackedItem(item.id, type)
+                    );
+                });
+                listItem.appendChild(deleteButton);
+
+                container.appendChild(listItem);
+            });
+        }
+
+        async function deleteTrackedItem(itemId, itemType) {
+            console.log(`Management Page: Удаление элемента ${itemType} с ID: ${itemId}`);
+            const result = await sendWebhook('delete_item', { userId: Telegram.WebApp.initDataUnsafe.user.id, id: itemId, type: itemType });
+            if (result && result.success) {
+                showMessageBox('Успех', result.message, 'alert', () => {
+                    fetchTrackedItems(); // Обновляем список после удаления
+                    fetchHomeData(); // Обновляем данные на главной странице
+                });
+            } else {
+                showMessageBox('Ошибка', result.message || 'Не удалось удалить элемент.');
+            }
+        }
+
+        // --- Функции страницы профиля ---
+        const userNameElement = document.getElementById('user-name');
+        const emailNotificationsToggle = document.getElementById('email-notifications-toggle');
+        const emailInputContainer = document.getElementById('email-input-container');
+        const emailInput = document.getElementById('email-input');
+        const chooseTariffButton = document.getElementById('choose-tariff-button');
+
+        async function fetchProfileData() {
+            console.log("Profile Page: Загрузка данных профиля...");
+            const user = Telegram.WebApp.initDataUnsafe.user;
+            if (user) {
+                userNameElement.innerText = `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Пользователь Telegram';
+            } else {
+                userNameElement.innerText = 'Неизвестный пользователь';
+            }
+
+            // Фиктивные настройки профиля для уведомлений по электронной почте
+            // В реальном приложении это будет получено из NocoDB через вебхук
+            const mockProfileSettings = {
+                emailNotificationsEnabled: false,
+                email: ''
+            };
+
+            // Симуляция получения настроек профиля
+            // const profileSettings = await sendWebhook('get_profile_settings', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+            // if (profileSettings) {
+            //     emailNotificationsToggle.checked = profileSettings.emailNotificationsEnabled;
+            //     emailInput.value = profileSettings.email || '';
+            //     if (profileSettings.emailNotificationsEnabled) {
+            //         emailInputContainer.classList.add('visible');
+            //     } else {
+            //         emailInputContainer.classList.remove('visible');
+            //     }
+            // }
+
+            // Для демонстрации используем фиктивные настройки напрямую
+            emailNotificationsToggle.checked = mockProfileSettings.emailNotificationsEnabled;
+            emailInput.value = mockProfileSettings.email || '';
+            if (mockProfileSettings.emailNotificationsEnabled) {
+                emailInputContainer.classList.add('visible');
+            } else {
+                emailInputContainer.classList.remove('visible');
+            }
+            console.log("Profile Page: Данные профиля загружены.");
+        }
+
+
+        emailNotificationsToggle.addEventListener('change', async () => {
+            console.log("Profile Page: Изменение состояния переключателя Email уведомлений.");
+            if (emailNotificationsToggle.checked) {
+                emailInputContainer.classList.add('visible');
+            } else {
+                emailInputContainer.classList.remove('visible');
+                emailInput.value = ''; // Очищаем email при отключении
+            }
+            await sendWebhook('update_profile', {
+                userId: Telegram.WebApp.initDataUnsafe.user.id,
+                emailNotificationsEnabled: emailNotificationsToggle.checked,
+                email: emailInput.value
+            });
+        });
+
+        emailInput.addEventListener('change', async () => {
+            console.log("Profile Page: Изменение Email адреса.");
+            await sendWebhook('update_profile', {
+                userId: Telegram.WebApp.initDataUnsafe.user.id,
+                emailNotificationsEnabled: emailNotificationsToggle.checked, // Убедитесь, что текущее состояние переключателя отправлено
+                email: emailInput.value
+            });
+        });
+
+        chooseTariffButton.addEventListener('click', async () => {
+            console.log("Profile Page: Нажата кнопка 'Выбрать тариф'.");
+            showMessageBox(
+                'Выбор тарифа',
+                'Вы будете перенаправлены в бот для выбора тарифа.',
+                'alert',
+                async () => {
+                    Telegram.WebApp.close(); // Сворачиваем Mini App
+                    await sendWebhook('initiate_tariff_selection', { userId: Telegram.WebApp.initDataUnsafe.user.id });
+                }
+            );
+        });
+
+
+        // --- Инициализация приложения ---
+        window.onload = async () => {
+            console.log("App: Окно загружено. Инициализация Telegram Web App.");
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            await checkSubscription(); // Начинаем с проверки подписки
+            showPage('home-page'); // Показываем домашнюю страницу изначально
+        };
+
+    </script>
+</body>
+</html>
