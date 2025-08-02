@@ -1,174 +1,182 @@
-html
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Отслеживание дел и компаний</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Арбитражный Трекер</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Home Page -->
+            <div id="home-page" class="page active">
+                <div class="page-header">
+                    <h1>Главная</h1>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-title">Ближайшее заседание</div>
+                        <div id="next-hearing-date" class="stat-value">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Всего дел</div>
+                        <div id="total-cases" class="stat-value">0</div>
+                    </div>
+                    <div class="courts-breakdown">
+                        <h3>По судам:</h3>
+                        <div id="courts-list"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Отслеживаемых компаний</div>
+                        <div id="total-companies" class="stat-value">0</div>
+                    </div>
+                </div>
+            </div>
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #1a1a1a;
-            height: 100vh;
-            overflow: hidden;
-        }
+            <!-- Calendar Page -->
+            <div id="calendar-page" class="page">
+                <div class="page-header">
+                    <h1>Календарь</h1>
+                </div>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prev-month" class="nav-btn">‹</button>
+                        <div id="current-month-year" class="month-year"></div>
+                        <button id="next-month" class="nav-btn">›</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="weekday">Пн</div>
+                        <div class="weekday">Вт</div>
+                        <div class="weekday">Ср</div>
+                        <div class="weekday">Чт</div>
+                        <div class="weekday">Пт</div>
+                        <div class="weekday weekend">Сб</div>
+                        <div class="weekday weekend">Вс</div>
+                        <div id="calendar-dates"></div>
+                    </div>
+                </div>
+                <div class="case-details-section">
+                    <h3>Детали дела</h3>
+                    <div id="case-details-content" class="details-content">
+                        Выберите дату с заседанием для просмотра деталей
+                    </div>
+                </div>
+            </div>
 
-        .page {
-            display: none;
-            height: calc(100vh - 60px);
-            overflow-y: auto;
-            padding: 16px;
-            padding-bottom: 76px;
-        }
+            <!-- Management Page -->
+            <div id="management-page" class="page">
+                <div class="page-header">
+                    <h1>Управление</h1>
+                </div>
+                <div class="toggle-container">
+                    <div class="toggle-switch">
+                        <input type="radio" id="cases-toggle" name="list-type" value="cases" checked>
+                        <label for="cases-toggle">Отслеживаемые дела</label>
+                        <input type="radio" id="companies-toggle" name="list-type" value="companies">
+                        <label for="companies-toggle">Отслеживаемые компании</label>
+                    </div>
+                </div>
+                <div class="items-list">
+                    <div id="cases-list" class="list-content active"></div>
+                    <div id="companies-list" class="list-content"></div>
+                </div>
+            </div>
 
-        .page.active {
-            display: block;
-        }
+            <!-- Profile Page -->
+            <div id="profile-page" class="page">
+                <div class="page-header">
+                    <h1>Профиль</h1>
+                </div>
+                <div class="profile-content">
+                    <div class="user-info">
+                        <h2 id="user-name">Загрузка...</h2>
+                    </div>
+                    <div class="subscription-info">
+                        <h3>Подписка</h3>
+                        <div class="subscription-details">
+                            <div class="detail-row">
+                                <span>Тариф:</span>
+                                <span id="tariff-name">-</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>Действует до:</span>
+                                <span id="subscription-end">-</span>
+                            </div>
+                        </div>
+                        <button id="choose-tariff-btn" class="primary-btn">Выбрать тариф</button>
+                    </div>
+                    <div class="notifications-section">
+                        <h3>Уведомления</h3>
+                        <div class="notification-setting">
+                            <label class="switch-label">
+                                <input type="checkbox" id="email-notifications-toggle">
+                                <span class="slider"></span>
+                                Email уведомления
+                            </label>
+                        </div>
+                        <div id="email-input-container" class="email-input-container hidden">
+                            <input type="email" id="email-input" placeholder="Введите ваш email">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
 
-        .nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            height: 60px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-page="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-btn" data-page="calendar">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Календарь</span>
+            </button>
+            <button class="nav-btn add-btn" data-page="add">
+                <span class="nav-icon">➕</span>
+                <span class="nav-label">Добавить</span>
+            </button>
+            <button class="nav-btn" data-page="management">
+                <span class="nav-icon">🔔</span>
+                <span class="nav-label">Управление</span>
+            </button>
+            <button class="nav-btn" data-page="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Профиль</span>
+            </button>
+        </nav>
+    </div>
 
-        .nav-btn {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #666;
-        }
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить отслеживание</h2>
+                <button id="close-modal" class="close-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="item-type-selector">
+                    <button id="select-case" class="type-btn active">Судебное дело</button>
+                    <button id="select-company" class="type-btn">Компания</button>
+                </div>
+                <div class="input-section">
+                    <div id="case-input-section" class="input-group active">
+                        <label for="case-number">Номер дела:</label>
+                        <input type="text" id="case-number" placeholder="Введите номер дела">
+                    </div>
+                    <div id="company-input-section" class="input-group">
+                        <label for="company-id">ИНН или ОГРН:</label>
+                        <input type="text" id="company-id" placeholder="Введите ИНН или ОГРН">
+                    </div>
+                </div>
+                <button id="add-item-btn" class="primary-btn">Добавить</button>
+            </div>
+        </div>
+    </div>
 
-        .nav-btn.active {
-            color: #007AFF;
-        }
-
-        .nav-btn.add {
-            transform: scale(1.2);
-            background: #007AFF;
-            color: white;
-            border-radius: 50%;
-            margin: 8px;
-            box-shadow: 0 2px 8px rgba(0,122,255,0.3);
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .card h3 {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .card .value {
-            font-size: 24px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .calendar {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .calendar-header button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            color: #007AFF;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            cursor: pointer;
-            position: relative;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .calendar-day:hover {
-            background: #f0f0f0;
-        }
-
-        .calendar-day.weekend {
-            color: #ff3b30;
-        }
-
-        .calendar-day.today {
-            background: #007AFF;
-            color: white;
-            font-weight: 600;
-        }
-
-        .calendar-day.has-event::after {
-            content: '⚔️';
-            position: absolute;
-            bottom: 2px;
-            font-size: 12px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
+    <script src="script.js"></script>
+</body>
+</html>
